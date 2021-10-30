@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import { View, StyleSheet, Button, Alert,Text } from "react-native";
 import {AppRegistry} from 'react-native';
 import {name as appName} from './app.json';
-import { ApolloClient, InMemoryCache, ApolloProvider,  useQuery,
-                                                       gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider,  useQuery, gql } from '@apollo/client';
+import { Query } from "react-apollo";
+
+
 const client = new ApolloClient({
-  uri: 'localhost:4000/',
+  uri: 'http://192.168.55.53:4000',
   cache: new InMemoryCache()
 
 });
-
 const GetUsers = gql`
   query GetUsers {
     users {
@@ -20,63 +21,65 @@ const GetUsers = gql`
   }
 `;
 
-const qwe= ({ navigation }) => {
-  const { data, loading } = useQuery(GetUsers)
+
+const styles = StyleSheet.create({
+  center: {
+    alignItems: 'center'
+  }
+})
+
+const AA=()=>{
+     const { loading, error, data } = useQuery(GetUsers);
+
+         console.log("=============");
+         console.log(loading);
+         console.log(data);
+         console.log(error);
+         console.log("=============");
+
+         let template = ``;
+         if (loading) {template = <Text>`로딩중... ${loading}`</Text>;}
+         if (error) {template = <Text>`에러발생 : ${error}`</Text>;}
+         if (data) {
+           template = data.users.map((item, index) =>
+             <Text key={index}>{item.userId} / {item.userPw}</Text>
+           )
+         }
+          return (<View>{template}</View>);
+}
 
 
+const Greeting = (props) => {
   return (
-    <FlatList
-      data={data.chapters}
-      renderItem={({ item }) => (
-        <ChapterItem
-          chapter={item}
-          onPress={() => navigation.navigate('Chapter', { chapter: item })}
-        />
-      )}
-      keyExtractor={(chapter) => chapter.id.toString()}
-    />
-  )
+    <View style={styles.center}>
+      <Text>그만자자 {props.name}!</Text>
+    </View>
+  );
+}
+
+const LotsOfGreetings = () => {
+  return (
+    <View style={[styles.center, {top: 50}]}>
+      <Greeting name='권준' />
+      <Greeting name='최성우' />
+    </View>
+  );
 }
 
 const App = () => {
 
 
 
-    const b= client.query({
-      query: gql`
-         query GetUsers {
-             users {
-                 id
-                 userId
-                 userPw
-             }
-           }
-        `
-    })
-
-        const a = 10;
     return (
      <ApolloProvider client={client}>
+    <AA />
+    <LotsOfGreetings />
+    </ApolloProvider>
 
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center"
-        }}>
-        <Text>Hello, world! {a}</Text>
-      </View>
-     </ApolloProvider>
+
     )
 
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "space-around",
-    alignItems: "center"
-  }
-});
 
 export default App;
